@@ -119,3 +119,8 @@ add_executable(orbslam2_loca3d
 Examples/Monocular/orbslam2_loca3d.cpp)
 target_link_libraries(orbslam2_loca3d ${PROJECT_NAME})
 
+# Build tools
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/tools)
+add_executable(bin_vocabulary
+tools/bin_vocabulary.cc)
+target_link_libraries(bin_vocabulary ${PROJECT_NAME})
