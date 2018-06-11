@@ -111,3 +111,11 @@ add_executable(mono_euroc
 Examples/Monocular/mono_euroc.cc)
 target_link_libraries(mono_euroc ${PROJECT_NAME})
 
+add_executable(mono_webcam
+Examples/Monocular/mono_webcam.cc)
+target_link_libraries(mono_webcam ${PROJECT_NAME})
+
+add_executable(orbslam2_loca3d
+Examples/Monocular/orbslam2_loca3d.cpp)
+target_link_libraries(orbslam2_loca3d ${PROJECT_NAME})
+
