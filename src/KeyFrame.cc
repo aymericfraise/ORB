@@ -138,7 +138,7 @@ void KeyFrame::AddConnection(KeyFrame *pKF, const int &weight)
 void KeyFrame::UpdateBestCovisibles()
 {
     unique_lock<mutex> lock(mMutexConnections);
-    vector<pair<int,KeyFrame*> > vPairs;
+    vector<pair<int,KeyFrame*> > vPairs; //equivalent du mapping mConnectedKeyFrameWeigths mais weaight->keyframe plutot que keyframe->weight
     vPairs.reserve(mConnectedKeyFrameWeights.size());
     for(map<KeyFrame*,int>::iterator mit=mConnectedKeyFrameWeights.begin(), mend=mConnectedKeyFrameWeights.end(); mit!=mend; mit++)
        vPairs.push_back(make_pair(mit->second,mit->first));
@@ -171,6 +171,11 @@ vector<KeyFrame*> KeyFrame::GetVectorCovisibleKeyFrames()
     return mvpOrderedConnectedKeyFrames;
 }
 
+/**
+ * @brief KeyFrame::GetBestCovisibilityKeyFrames
+ * @param N
+ * @return Returns the first N keyframes with the biggest weights in the covisibility graph, in descending order
+ */
 vector<KeyFrame*> KeyFrame::GetBestCovisibilityKeyFrames(const int &N)
 {
     unique_lock<mutex> lock(mMutexConnections);
@@ -247,7 +252,7 @@ set<MapPoint*> KeyFrame::GetMapPoints()
     return s;
 }
 
-int KeyFrame::TrackedMapPoints(const int &minObs)
+int KeyFrame::TrackedMapPoints(const int &minObs) // retourne le nombre de map points de la keyframe qui ont été observés plus de minObs fois en tout
 {
     unique_lock<mutex> lock(mMutexFeatures);
 

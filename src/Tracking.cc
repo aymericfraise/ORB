@@ -237,8 +237,8 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
 
 cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 {
+    // Convert the incoming image to grayscale
     mImGray = im;
-
     if(mImGray.channels()==3)
     {
         if(mbRGB)
@@ -288,9 +288,8 @@ void Tracking::Track()
         if(mState!=OK)
             return;
     }
-    else
+    else // System is initialized. Track Frame.
     {
-        // System is initialized. Track Frame.
         bool bOK;
 
         // Initial camera pose estimation using motion model or relocalization (if tracking is lost)
@@ -397,6 +396,8 @@ void Tracking::Track()
         // If we have an initial estimation of the camera pose and matching. Track the local map.
         if(!mbOnlyTracking)
         {
+            // CHECK
+            // Pourquoi on change bOK (possiblement bOK = 0 apres ca et donc mState passe a LOST) alors qu'on a deja matché des points donc on est pas vraiment perdu ?
             if(bOK)
                 bOK = TrackLocalMap();
         }
@@ -426,7 +427,8 @@ void Tracking::Track()
                 cv::Mat LastTwc = cv::Mat::eye(4,4,CV_32F);
                 mLastFrame.GetRotationInverse().copyTo(LastTwc.rowRange(0,3).colRange(0,3));
                 mLastFrame.GetCameraCenter().copyTo(LastTwc.rowRange(0,3).col(3));
-                mVelocity = mCurrentFrame.mTcw*LastTwc;
+                // Pourquoi c'est une velocité ?
+                mVelocity = mCurrentFrame.mTcw*LastTwc; // Transformation de la frame courante * (transformation de la frame précédente)^-1 -> deplacement entre deux frames
             }
             else
                 mVelocity = cv::Mat();
@@ -772,6 +774,8 @@ bool Tracking::TrackReferenceKeyFrame()
     mCurrentFrame.mvpMapPoints = vpMapPointMatches;
     mCurrentFrame.SetPose(mLastFrame.mTcw);
 
+    // CHECK Comprend pas
+    // Trouve la pose correcte ?
     Optimizer::PoseOptimization(&mCurrentFrame);
 
     // Discard outliers
@@ -927,10 +931,15 @@ bool Tracking::TrackWithMotionModel()
     return nmatchesMap>=10;
 }
 
+
+/**
+ * @brief Tracking::TrackLocalMap
+ * We have an estimation of the camera pose and some map points tracked in the frame.
+ * We retrieve the local map and try to find matches to points in the local map.
+ * @return
+ */
 bool Tracking::TrackLocalMap()
 {
-    // We have an estimation of the camera pose and some map points tracked in the frame.
-    // We retrieve the local map and try to find matches to points in the local map.
 
     UpdateLocalMap();
 
@@ -1023,7 +1032,7 @@ bool Tracking::NeedNewKeyFrame()
         thRefRatio = 0.4f;
 
     if(mSensor==System::MONOCULAR)
-        thRefRatio = 0.9f;
+        thRefRatio = .9f; // defaut : 0.9f;
 
     // Condition 1a: More than "MaxFrames" have passed from last keyframe insertion
     const bool c1a = mCurrentFrame.mnId>=mnLastKeyFrameId+mMaxFrames;

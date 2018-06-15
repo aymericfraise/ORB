@@ -22,3 +22,9 @@ build/
 *~
 lib/
 
+
+Examples/Monocular/mono_ibisc
+
+Examples/Monocular/mono_webcam
+
+tools/bin_vocabulary

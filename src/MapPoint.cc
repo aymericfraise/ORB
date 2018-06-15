@@ -239,6 +239,8 @@ float MapPoint::GetFoundRatio()
     return static_cast<float>(mnFound)/mnVisible;
 }
 
+// Trouve la description du mappoint parmi toutes les keyframe qui l'observent qui est la plus représentative
+// (recupere toutes les descriptions, calcule les distances entre elles et trouve la description la plus proche de toutes les autres)
 void MapPoint::ComputeDistinctiveDescriptors()
 {
     // Retrieve all observed descriptors
@@ -260,9 +262,13 @@ void MapPoint::ComputeDistinctiveDescriptors()
 
     for(map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
     {
+        // mit->first = keyframe*, mit->second = size_t
+
         KeyFrame* pKF = mit->first;
 
         if(!pKF->isBad())
+            // on met dans vDescriptors la ligne de mDescriptors qui correspond au map point courant
+            // mDescriptors est la matrice des descripteurs de tous les mappoints visibles par une keyframe
             vDescriptors.push_back(pKF->mDescriptors.row(mit->second));
     }
 

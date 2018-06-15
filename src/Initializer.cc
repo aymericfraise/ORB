@@ -581,6 +581,7 @@ bool Initializer::ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, cv:
     // Motion and structure from motion in a piecewise planar environment.
     // International Journal of Pattern Recognition and Artificial Intelligence, 1988
 
+    // K = matrice de calibration
     cv::Mat invK = K.inv();
     cv::Mat A = invK*H21*K;
 

@@ -118,6 +118,7 @@ protected:
      cv::Mat mWorldPos;
 
      // Keyframes observing the point and associated index in keyframe
+     //mObservations[pKF] donne l'indice du map point courant dans la keyframe pKF si la keyframe pKF observe le map point
      std::map<KeyFrame*,size_t> mObservations;
 
      // Mean viewing direction

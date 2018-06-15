@@ -61,7 +61,7 @@ void LocalMapping::Run()
             ProcessNewKeyFrame();
 
             // Check recent MapPoints
-            MapPointCulling();
+            MapPointCulling(); // supprime les points dont la suppression a été demandée par le local BA et la suppression de keyframes
 
             // Triangulate new MapPoints
             CreateNewMapPoints();
@@ -616,7 +616,7 @@ bool LocalMapping::SetNotStop(bool flag)
 {
     unique_lock<mutex> lock(mMutexStop);
 
-    if(flag && mbStopped)
+    if(flag && mbStopped) // si on veut empecher le localmapping de se stopper mais quil est deja stoppé
         return false;
 
     mbNotStop = flag;
