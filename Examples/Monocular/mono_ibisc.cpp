@@ -56,12 +56,10 @@ void LoadImages(const string &strSequence, vector<string> &vstrImageFilenames,
 namespace spd = spdlog;
 
 std::shared_ptr<spd::logger> console_logger;
-std::shared_ptr<spd::logger> processing_times_logger;
-std::shared_ptr<spd::logger> processing_rt_logger;
 
 int main(int argc, char **argv)
 {
-    if(argc != 5)
+    if(argc != 4)
     {
         cerr << endl << "Usage: ./orbslam2_loca3d path_to_vocabulary path_to_settings path_to_sequence log_directory_name" << endl;
         return 1;
@@ -74,11 +72,7 @@ int main(int argc, char **argv)
     ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%H-%M-%S");
     auto datetime_string = ss.str();
 
-    std::string logging_directory =  "logs/";
-    logging_directory += argv[4];
     console_logger = spd::stdout_color_mt("console");
-    processing_rt_logger = spd::basic_logger_mt("orb_slam_rt",  logging_directory + "/frame_transformation_" + datetime_string + ".txt");
-    processing_times_logger = spd::basic_logger_mt("orb_slam_time", logging_directory + "/frame_processing_times_" + datetime_string + ".txt");
     // Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
@@ -89,20 +83,9 @@ int main(int argc, char **argv)
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
 
-    // Vector for tracking time statistics
-    vector<double> vTimesTrack;
-    vTimesTrack.resize(nImages);
-
-    processing_times_logger->info("Starting sequence, using data-folder: {}", string(argv[3]));
     console_logger->info("Starting sequence, using data-folder: {}", string(argv[3]));
-    processing_rt_logger->info("Starting sequence, using data-folder: {}", string(argv[3]));
 
-    processing_times_logger->info("Valid images number, found in this data-folder: {}", nImages);
     console_logger->info("Valid images number, found in this data-folder: {}", nImages);
-
-    //    cout << endl << "-------" << endl;
-//    cout << "Start processing sequence ..." << endl;
-//    cout << "Images in the sequence: " << nImages << endl << endl;
 
     // Main loop
     cv::Mat im;
@@ -114,7 +97,6 @@ int main(int argc, char **argv)
 
         if(im.empty())
         {
-            processing_times_logger->critical("Failed to load image at: {}", vstrImageFilenames[ni]);
             console_logger->critical("Failed to load image at: {}", vstrImageFilenames[ni]);
             return 1;
         }
@@ -125,8 +107,6 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 
-        // Pass the image to the SLAM system
-//        auto frame = SLAM.TrackMonocular(im,tframe);
         auto outTcw = SLAM.TrackMonocular(im,tframe);
 
 #ifdef COMPILEDWITHC11
@@ -137,28 +117,6 @@ int main(int argc, char **argv)
 
         double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
 
-        vTimesTrack[ni]=ttrack;
-
-        processing_times_logger->info("Frame {}: tracking time is {} seconds", ni, ttrack);
-
-        // try to save on-the-fly Rotation and Translation, if any
-
-        if (!outTcw.empty() && outTcw.rows > 0 && outTcw.cols > 0) {
-            cv::Mat R = outTcw.rowRange(0,3).colRange(0,3).t();
-            vector<float> q = ORB_SLAM2::Converter::toQuaternion(R);
-            cv::Mat Rcw = outTcw.rowRange(0,3).colRange(0,3);
-            cv::Mat tcw = outTcw.rowRange(0,3).col(3);
-            cv::Mat Rwc = Rcw.t();
-            cv::Mat Ow = -Rwc*tcw;
-
-            processing_rt_logger->info("{}: {:03.7f} {:03.7f} {:03.7f} {:03.7f} {:03.7f} {:03.7f} {:03.7f} T",
-                                       tframe, Ow.at<float>(0), Ow.at<float>(1), Ow.at<float>(2), q[0], q[1],
-                                       q[2], q[3]);
-        } else {
-            processing_rt_logger->info("{}: 0 0 0 0 0 0 1 F", tframe);
-
-        }
-
         // Wait to load the next frame
         double T=0;
         if(ni<nImages-1)
@@ -168,10 +126,6 @@ int main(int argc, char **argv)
 
         if(ttrack<T)
             usleep(static_cast<__useconds_t>((T - ttrack) * 1e6));
-
-        /*if (SLAM.GetPauseRequestedAndToggle()) {
-            usleep(static_cast<__useconds_t>(10e6));
-        }*/
     }
 
 
@@ -179,19 +133,6 @@ int main(int argc, char **argv)
 
     // Stop all threads
     SLAM.Shutdown();
-
-    // Tracking time statistics
-    sort(vTimesTrack.begin(),vTimesTrack.end());
-    float totaltime = 0;
-    for(int ni=0; ni<nImages; ni++)
-    {
-        totaltime+=vTimesTrack[ni];
-    }
-    cout << "-------" << endl << endl;
-    processing_times_logger->info("Median tracking time: {}", vTimesTrack[nImages/2]);
-    console_logger->info("Median tracking time: {}", vTimesTrack[nImages/2]);
-    processing_times_logger->info("Mean tracking time: {}", totaltime/nImages);
-    console_logger->info("Mean tracking time: {}", totaltime/nImages);
 
     // Save camera trajectory
     SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
@@ -216,7 +157,6 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageFilena
     {
         counter ++;
         if (!getline(fTimes,s) && !fTimes.eof()) {
-            processing_times_logger->error("Problem with the timestamps file: not really correct string found in the file (probably around line {})", counter);
             console_logger->error("Problem with the timestamps file: not really correct string found in the file (probably around line {})", counter);
 
 //            cerr << "Problem while reading times.txt file" << endl;

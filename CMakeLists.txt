@@ -4,6 +4,7 @@ project(ORB_SLAM2)
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
+SET(CMAKE_BUILD_TYPE Debug)
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
@@ -115,9 +116,9 @@ add_executable(mono_webcam
 Examples/Monocular/mono_webcam.cc)
 target_link_libraries(mono_webcam ${PROJECT_NAME})
 
-add_executable(orbslam2_loca3d
-Examples/Monocular/orbslam2_loca3d.cpp)
-target_link_libraries(orbslam2_loca3d ${PROJECT_NAME})
+add_executable(mono_ibisc
+Examples/Monocular/mono_ibisc.cpp)
+target_link_libraries(mono_ibisc ${PROJECT_NAME})
 
 # Build tools
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/tools)
