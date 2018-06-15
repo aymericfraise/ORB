@@ -105,8 +105,12 @@ cv::Mat FrameDrawer::DrawFrame()
                 // This is a match to a MapPoint in the map
                 if(vbMap[i])
                 {
-                    cv::rectangle(im,pt1,pt2,cv::Scalar(0,255,0));
-                    cv::circle(im,vCurrentKeys[i].pt,2,cv::Scalar(0,255,0),-1);
+                    cv::Scalar BGRcolor(0,255,0);
+                    // Uncomment to have color scale with distance to camera (not really working yet)
+                    // cv::Scalar BGRcolor(255-mMapPointDistances[i],255-mMapPointDistances[i],255);
+                    cv::rectangle(im,pt1,pt2,BGRcolor);
+                    cv::circle(im,vCurrentKeys[i].pt,2,BGRcolor,-1);
+                    cv::putText(im, std::to_string(mnTracked), pt2, cv::FONT_HERSHEY_PLAIN, .5, cv::Scalar(255,255,255));
                     mnTracked++;
                 }
                 else // This is match to a "visual odometry" MapPoint created in the last frame
@@ -167,6 +171,48 @@ void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
 void FrameDrawer::Update(Tracking *pTracker)
 {
     unique_lock<mutex> lock(mMutex);
+
+    //Calcul des distances des mappoints correspondant aux keypoints par rapport à la caméra
+    if(pTracker->mLastProcessedState == Tracking::OK){
+        std::vector<MapPoint*> mapPoints = pTracker->mCurrentFrame.mvpMapPoints;
+        cv::Mat tCam = pTracker->mCurrentFrame.mTcw.rowRange(0,3).col(3);
+        int maxDistance;
+        int minDistance;
+        bool bInitialized = false;
+        mMapPointDistances.clear();
+        for(int i = 0; i < mapPoints.size(); i++){ // Calculs des distances
+            mMapPointDistances.push_back(NULL);
+            if(mapPoints[i] == NULL)
+                continue;
+
+            cv::Mat tPoint = mapPoints[i]->GetWorldPos();
+            cv::Mat diff = tCam - tPoint;
+            float distance = cv::norm(diff);
+            int intDistance = static_cast<int>(distance);
+            mMapPointDistances[i] = intDistance;
+
+            if(!bInitialized){
+                maxDistance = intDistance;
+                minDistance = intDistance;
+                bInitialized = true;
+            }
+            else {
+                maxDistance = maxDistance < intDistance ? intDistance : maxDistance;
+                minDistance = minDistance > intDistance ? intDistance : minDistance;
+            }
+        }
+        for(int i = 0; i < mapPoints.size(); i++){ // Normalisation
+            if(maxDistance - minDistance == 0)
+                break;
+            if(mMapPointDistances[i] == NULL){
+                mMapPointDistances[i] = 0;
+                continue;
+            }
+            mMapPointDistances[i] += -minDistance;
+            mMapPointDistances[i] = (int)((float)mMapPointDistances[i] * 255.0 / (float)(maxDistance - minDistance));
+        }
+    }
+
     pTracker->mImGray.copyTo(mIm);
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
     N = mvCurrentKeys.size();
