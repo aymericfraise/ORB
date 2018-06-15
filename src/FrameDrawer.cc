@@ -105,9 +105,9 @@ cv::Mat FrameDrawer::DrawFrame()
                 // This is a match to a MapPoint in the map
                 if(vbMap[i])
                 {
+                    // Switch the following two lines to have color scale with distance to camera (not really working yet)
                     cv::Scalar BGRcolor(0,255,0);
-                    // Uncomment to have color scale with distance to camera (not really working yet)
-                    // cv::Scalar BGRcolor(255-mMapPointDistances[i],255-mMapPointDistances[i],255);
+//                  cv::Scalar BGRcolor(255-mMapPointDistances[i],255-mMapPointDistances[i],255);
                     cv::rectangle(im,pt1,pt2,BGRcolor);
                     cv::circle(im,vCurrentKeys[i].pt,2,BGRcolor,-1);
                     cv::putText(im, std::to_string(mnTracked), pt2, cv::FONT_HERSHEY_PLAIN, .5, cv::Scalar(255,255,255));
