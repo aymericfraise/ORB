@@ -36,7 +36,7 @@ namespace ORB_SLAM2
 {
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
-               const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),mbActivateLocalizationMode(false),
+               const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbPause(false), mbReset(false),mbActivateLocalizationMode(false),
         mbDeactivateLocalizationMode(false)
 {
     // Output welcome message
@@ -159,6 +159,16 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
         }
     }
 
+    // Check pause
+    {
+    unique_lock<mutex> lock(mMutexPause);
+    if(mbPause)
+    {
+        mCvResume.wait(lock);
+        mbPause = false;
+    }
+    }
+
     // Check reset
     {
     unique_lock<mutex> lock(mMutexReset);
@@ -208,6 +218,16 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
             mpLocalMapper->Release();
             mbDeactivateLocalizationMode = false;
         }
+    }
+
+    // Check pause
+    {
+    unique_lock<mutex> lock(mMutexPause);
+    if(mbPause)
+    {
+        mCvResume.wait(lock);
+        mbPause = false;
+    }
     }
 
     // Check reset
@@ -261,6 +281,16 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
         }
     }
 
+    // Check pause
+    {
+    unique_lock<mutex> lock(mMutexPause);
+    if(mbPause)
+    {
+        mCvResume.wait(lock);
+        mbPause = false;
+    }
+    }
+
     // Check reset
     {
     unique_lock<mutex> lock(mMutexReset);
@@ -304,6 +334,20 @@ bool System::MapChanged()
     }
     else
         return false;
+}
+
+void System::Pause()
+{
+    unique_lock<mutex> lock(mMutexPause);
+    mbPause = true;
+}
+
+void System::Resume()
+{
+    unique_lock<mutex> lock(mMutexPause);
+    mbPause = false;
+    mCvResume.notify_one();
+
 }
 
 void System::Reset()
