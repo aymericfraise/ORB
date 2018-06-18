@@ -135,6 +135,7 @@ void KeyFrame::AddConnection(KeyFrame *pKF, const int &weight)
     UpdateBestCovisibles();
 }
 
+// Met a jour les vecteurs sorted des keyframes connectées dans le covisibility graph et celui des poids des connexions
 void KeyFrame::UpdateBestCovisibles()
 {
     unique_lock<mutex> lock(mMutexConnections);
@@ -455,6 +456,9 @@ void KeyFrame::SetErase()
     }
 }
 
+/**
+ * @brief Deletes the keyframe and all its occurences in graphs and maps
+ */
 void KeyFrame::SetBadFlag()
 {   
     {
@@ -468,9 +472,11 @@ void KeyFrame::SetBadFlag()
         }
     }
 
+    // Se supprime des connexions des autres keyframes dans le covisibility graph
     for(map<KeyFrame*,int>::iterator mit = mConnectedKeyFrameWeights.begin(), mend=mConnectedKeyFrameWeights.end(); mit!=mend; mit++)
         mit->first->EraseConnection(this);
 
+    // Se supprime de la liste des observateurs de ses map points
     for(size_t i=0; i<mvpMapPoints.size(); i++)
         if(mvpMapPoints[i])
             mvpMapPoints[i]->EraseObservation(this);
@@ -481,7 +487,7 @@ void KeyFrame::SetBadFlag()
         mConnectedKeyFrameWeights.clear();
         mvpOrderedConnectedKeyFrames.clear();
 
-        // Update Spanning Tree
+        // Update Spanning Tree (tout le reste de cette scope)
         set<KeyFrame*> sParentCandidates;
         sParentCandidates.insert(mpParent);
 

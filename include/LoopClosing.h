@@ -112,7 +112,7 @@ protected:
 
     LocalMapping *mpLocalMapper;
 
-    std::list<KeyFrame*> mlpLoopKeyFrameQueue;
+    std::list<KeyFrame*> mlpLoopKeyFrameQueue; // file d'attente des keyframes pour lesquelles verifier si il y a loop closing
 
     std::mutex mMutexLoopQueue;
 
