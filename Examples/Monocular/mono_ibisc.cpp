@@ -124,18 +124,19 @@ int main(int argc, char **argv)
         else if(ni>0)
             T = tframe-vTimestamps[ni-1];
 
+        if(cv::waitKey(30) >= 0){
+            break;
+        }
+
         if(ttrack<T)
             usleep(static_cast<__useconds_t>((T - ttrack) * 1e6));
     }
-
-
-    usleep(static_cast<__useconds_t>(20e6));
 
     // Stop all threads
     SLAM.Shutdown();
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    // SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
 
     return 0;
 }

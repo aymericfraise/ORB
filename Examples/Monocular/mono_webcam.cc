@@ -79,14 +79,15 @@ int main(int argc, char **argv)
         // Pass the image to the SLAM system
         SLAM.TrackMonocular(im,tframe);
 
+        if(cv::waitKey(30) >= 0){
+            break;
+        }
 
         //Wait for next frame
         std::chrono::steady_clock::time_point nextFrame = std::chrono::steady_clock::now();
         double time2 = std::chrono::duration_cast<std::chrono::microseconds>(nextFrame - currentFrame).count();
         if(time2<33333){
             usleep(33333-time2);
-
-
         }
 
 //        usleep(100);
@@ -99,7 +100,7 @@ int main(int argc, char **argv)
     SLAM.Shutdown();
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");    
+    //SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
 
 
     return 0;
