@@ -33,3 +33,4 @@ cd ..
 
 echo "Converting vocabulary to binary"
 ./tools/bin_vocabulary
+cd ..
