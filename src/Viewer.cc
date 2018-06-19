@@ -28,8 +28,7 @@ namespace ORB_SLAM2
 
 Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Tracking *pTracking, const string &strSettingPath, bool mbReuseMap_):
     mpSystem(pSystem), mpFrameDrawer(pFrameDrawer),mpMapDrawer(pMapDrawer), mpTracker(pTracking),
-    mbFinishRequested(false), mbFinished(true), mbPaused(false), mbStopped(true), mbStopRequested(false)
-    mbFinishRequested(false), mbFinished(true), mbStopped(true), mbStopRequested(false), mbReuseMap(mbReuseMap_)
+    mbFinishRequested(false), mbFinished(true), mbPaused(false), mbStopped(true), mbStopRequested(false), mbReuseMap(mbReuseMap_)
 {
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 

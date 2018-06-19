@@ -36,9 +36,12 @@ namespace ORB_SLAM2
 {
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
-               const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbPause(false), mbReset(false),mbActivateLocalizationMode(false),
-        mbDeactivateLocalizationMode(false)
+               const bool bUseViewer, bool is_save_map):
+    mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbPause(false), mbReset(false), mbActivateLocalizationMode(false),
+    is_save_map(is_save_map)
 {
+
+    cout << is_save_map << endl;
     // Output welcome message
     cout << endl <<
     "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl <<
@@ -88,7 +91,6 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         cerr << "Failed to open at: " << strVocFile << endl;
         exit(-1);
     }
-//    cout << "Vocabulary loaded!" << endl << endl;
     printf("Vocabulary loaded in %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 
 
@@ -371,6 +373,7 @@ void System::Reset()
 
 void System::Shutdown()
 {
+    std::cout << "Shutting down" << std::endl;
     mpLocalMapper->RequestFinish();
     mpLoopCloser->RequestFinish();
     if(mpViewer)
@@ -389,8 +392,11 @@ void System::Shutdown()
     }
     if(mpViewer)
         pangolin::BindToContext("ORB-SLAM2: Map Viewer");
-    if (is_save_map)
+    std::cout << is_save_map << std::endl;
+    if (is_save_map){
+        std::cout << "Saving map" << std::endl;
         SaveMap(mapfile);
+    }
 }
 
 void System::SaveTrajectoryTUM(const string &filename)
