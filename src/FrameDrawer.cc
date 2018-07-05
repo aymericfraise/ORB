@@ -164,7 +164,7 @@ void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
     imText = cv::Mat(im.rows+textSize.height+10,im.cols,im.type());
     im.copyTo(imText.rowRange(0,im.rows).colRange(0,im.cols));
     imText.rowRange(im.rows,imText.rows) = cv::Mat::zeros(textSize.height+10,im.cols,im.type());
-    cv::putText(imText,s.str(),cv::Point(5,imText.rows-5),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255,255,255),1,8);
+    //cv::putText(imText,s.str(),cv::Point(5,imText.rows-5),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255,255,255),1,8);
 
 }
 
@@ -173,45 +173,45 @@ void FrameDrawer::Update(Tracking *pTracker)
     unique_lock<mutex> lock(mMutex);
 
     //Calcul des distances des mappoints correspondant aux keypoints par rapport à la caméra
-    if(pTracker->mLastProcessedState == Tracking::OK){
-        std::vector<MapPoint*> mapPoints = pTracker->mCurrentFrame.mvpMapPoints;
-        cv::Mat tCam = pTracker->mCurrentFrame.mTcw.rowRange(0,3).col(3);
-        int maxDistance;
-        int minDistance;
-        bool bInitialized = false;
-        mMapPointDistances.clear();
-        for(int i = 0; i < mapPoints.size(); i++){ // Calculs des distances
-            mMapPointDistances.push_back(NULL);
-            if(mapPoints[i] == NULL)
-                continue;
+//    if(pTracker->mLastProcessedState == Tracking::OK){
+//        std::vector<MapPoint*> mapPoints = pTracker->mCurrentFrame.mvpMapPoints;
+//        cv::Mat tCam = pTracker->mCurrentFrame.mTcw.rowRange(0,3).col(3);
+//        int maxDistance;
+//        int minDistance;
+//        bool bInitialized = false;
+//        mMapPointDistances.clear();
+//        for(int i = 0; i < mapPoints.size(); i++){ // Calculs des distances
+//            mMapPointDistances.push_back(NULL);
+//            if(mapPoints[i] == NULL)
+//                continue;
 
-            cv::Mat tPoint = mapPoints[i]->GetWorldPos();
-            cv::Mat diff = tCam - tPoint;
-            float distance = cv::norm(diff);
-            int intDistance = static_cast<int>(distance);
-            mMapPointDistances[i] = intDistance;
+//            cv::Mat tPoint = mapPoints[i]->GetWorldPos();
+//            cv::Mat diff = tCam - tPoint;
+//            float distance = cv::norm(diff);
+//            int intDistance = static_cast<int>(distance);
+//            mMapPointDistances[i] = intDistance;
 
-            if(!bInitialized){
-                maxDistance = intDistance;
-                minDistance = intDistance;
-                bInitialized = true;
-            }
-            else {
-                maxDistance = maxDistance < intDistance ? intDistance : maxDistance;
-                minDistance = minDistance > intDistance ? intDistance : minDistance;
-            }
-        }
-        for(int i = 0; i < mapPoints.size(); i++){ // Normalisation
-            if(maxDistance - minDistance == 0)
-                break;
-            if(mMapPointDistances[i] == NULL){
-                mMapPointDistances[i] = 0;
-                continue;
-            }
-            mMapPointDistances[i] += -minDistance;
-            mMapPointDistances[i] = (int)((float)mMapPointDistances[i] * 255.0 / (float)(maxDistance - minDistance));
-        }
-    }
+//            if(!bInitialized){
+//                maxDistance = intDistance;
+//                minDistance = intDistance;
+//                bInitialized = true;
+//            }
+//            else {
+//                maxDistance = maxDistance < intDistance ? intDistance : maxDistance;
+//                minDistance = minDistance > intDistance ? intDistance : minDistance;
+//            }
+//        }
+//        for(int i = 0; i < mapPoints.size(); i++){ // Normalisation
+//            if(maxDistance - minDistance == 0)
+//                break;
+//            if(mMapPointDistances[i] == NULL){
+//                mMapPointDistances[i] = 0;
+//                continue;
+//            }
+//            mMapPointDistances[i] += -minDistance;
+//            mMapPointDistances[i] = (int)((float)mMapPointDistances[i] * 255.0 / (float)(maxDistance - minDistance));
+//        }
+//    }
 
     pTracker->mImGray.copyTo(mIm);
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;

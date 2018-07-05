@@ -337,11 +337,11 @@ void System::Shutdown()
 void System::SaveTrajectoryTUM(const string &filename)
 {
     cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
-    if(mSensor==MONOCULAR)
-    {
-        cerr << "ERROR: SaveTrajectoryTUM cannot be used for monocular." << endl;
-        return;
-    }
+//    if(mSensor==MONOCULAR)
+//    {
+//        cerr << "ERROR: SaveTrajectoryTUM cannot be used for monocular." << endl;
+//        return;
+//    }
 
     vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
@@ -388,7 +388,7 @@ void System::SaveTrajectoryTUM(const string &filename)
 
         vector<float> q = Converter::toQuaternion(Rwc);
 
-        f << setprecision(6) << *lT << " " <<  setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
+        f << setprecision(6) << *lT*1e9 << " " <<  setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
     }
     f.close();
     cout << endl << "trajectory saved!" << endl;

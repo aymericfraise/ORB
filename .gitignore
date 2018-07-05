@@ -27,5 +27,4 @@ KeyFrameTrajectory.txt
 build/
 *~
 lib/
-tools/bin_vocabulary
 doxygen/

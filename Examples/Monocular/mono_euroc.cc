@@ -35,9 +35,9 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
 
 int main(int argc, char **argv)
 {
-    if(argc != 5)
+    if(argc != 6)
     {
-        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_image_folder path_to_times_file" << endl;
+        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_image_folder path_to_times_file path_to_trajectory_file" << endl;
         return 1;
     }
 
@@ -125,7 +125,8 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveTrajectoryTUM(argv[5]);
+    // SLAM.SaveKeyFrameTrajectoryTUM("Trajectories/KF/KeyFrameTrajectory.txt");
 
     return 0;
 }

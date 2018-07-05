@@ -66,11 +66,13 @@ void LoopClosing::Run()
             // Detect loop candidates and check covisibility consistency
             if(DetectLoop())
             {
+               // cout << "loop detected" << endl;
                // Compute similarity transformation [sR|t]
                // In the stereo/RGBD case s=1
                if(ComputeSim3())
                {
                    // Perform loop fusion and pose graph optimization
+                   cout << "correcting loop" << endl;
                    CorrectLoop();
                }
             }
